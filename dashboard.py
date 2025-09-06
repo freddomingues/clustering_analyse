@@ -21,10 +21,10 @@ st.set_page_config(
 @st.cache_data
 def carregar_ou_gerar_dados():
     """
-    Verifica se a base de dados enriquecida de 100k registros existe.
+    Verifica se a base de dados de 100k registros existe.
     Se não, chama a nova função para gerá-la.
     """
-    nome_arquivo = 'base_sintetica_dividas_enriquecida.xlsx'
+    nome_arquivo = 'base_sintetica_dividas.xlsx'
     if not os.path.exists(nome_arquivo):
         with st.spinner('Base de dados não encontrada. Gerando 100.000 registros...'):
             df = data_generator.gerar_dados_sinteticos(n_clientes=100000, seed=42)
@@ -151,7 +151,7 @@ with tab3:
 
 with tab4:
     st.header("Análise de Perfil dos Clusters (Modelo K-Means)")
-    st.markdown(f"Analisando as características de cada um dos **{K_OTIMO}** clusters encontrados pelo K-Means na base de dados enriquecida.")
+    st.markdown(f"Analisando as características de cada um dos **{K_OTIMO}** clusters encontrados pelo K-Means na base de dados.")
     
     perfil_clusters = evaluation.analisar_perfis_clusters(df_numerico_original, labels_kmeans, 'K-Means')
 

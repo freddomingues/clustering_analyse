@@ -7,7 +7,7 @@ import streamlit as st
 # >>> OTIMIZAÇÃO: Adicionando cache do Streamlit <<<
 # Esta função é a mais demorada. O cache evita que ela seja
 # reexecutada a cada interação no dashboard, tornando a experiência mais fluida.
-@st.cache_data
+
 def encontrar_k_otimo(_df_padronizado, max_k=10):
     """
     Calcula a inércia (WCSS) e o coeficiente de silhueta para um range de K.

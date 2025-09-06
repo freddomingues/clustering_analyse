@@ -2,7 +2,7 @@
 import pandas as pd
 import numpy as np
 
-def gerar_dados_sinteticos(n_clientes=100000, seed=42):
+def gerar_dados_sinteticos(n_clientes=20000, seed=42):
     """
     Gera uma base de dados sintética de clientes inadimplentes,
     incluindo dados sociodemográficos e de comportamento de crédito.

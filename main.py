@@ -13,7 +13,7 @@ import visualization
 def main():
     """
     Função principal para executar o pipeline completo de clusterização
-    com a base de dados de 100.000 registros.
+    com a base de dados de 20.000 registros.
     """
     nome_arquivo = 'base_sintetica_dividas.xlsx'
 
@@ -25,7 +25,7 @@ def main():
     else:
         # >>> CORREÇÃO: Trocando f-string por .format() <<<
         print("Arquivo '{}' não encontrado. Gerando e salvando nova base de dados...".format(nome_arquivo))
-        df_clientes = data_generator.gerar_dados_sinteticos(n_clientes=100000, seed=42)
+        df_clientes = data_generator.gerar_dados_sinteticos(n_clientes=30000, seed=42)
         df_clientes.to_excel(nome_arquivo, index=False)
         print("Base de dados sintética salva com sucesso.")
     
@@ -53,7 +53,16 @@ def main():
     # Etapa 4: Aplicação dos Modelos
     print("\n--- Aplicando os modelos de clusterização ---")
     labels_kmeans = clustering_models.aplicar_kmeans(df_padronizado, n_clusters=K_OTIMO)
-    labels_hierarquico, _ = clustering_models.aplicar_cluster_hierarquico(df_padronizado, n_clusters=K_OTIMO)
+
+    # Hierárquico (APENAS em uma amostra)
+    print("Aplicando Clusterização Hierárquica em uma amostra...")
+    if len(df_padronizado) > 10000:
+        # Pega uma amostra de 10.000 pontos para não estourar a memória
+        df_amostra = df_padronizado.sample(n=10000, random_state=42)
+    else:
+        df_amostra = df_padronizado
+
+    labels_hierarquico, _ = clustering_models.aplicar_cluster_hierarquico(df_amostra, n_clusters=K_OTIMO)
     labels_dbscan = clustering_models.aplicar_dbscan(df_padronizado, eps=2.5, min_samples=20)
     
     labels_dict = {
