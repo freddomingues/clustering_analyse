@@ -73,3 +73,33 @@ def analisar_perfis_clusters(df_original, labels, nome_modelo):
     
     print(f"Análise de perfil para o modelo '{nome_modelo}' concluída.")
     return perfil_clusters
+
+def analisar_perfis_categoricos(df_original, labels, nome_modelo):
+    """
+    Analisa o perfil dos clusters com base nas variáveis categóricas,
+    encontrando o valor mais comum (moda) para cada uma.
+    
+    Args:
+        df_original (pd.DataFrame): O DataFrame original, antes do pré-processamento.
+        labels (array-like): O array com os labels dos clusters.
+        nome_modelo (str): O nome do modelo para usar no índice do resultado.
+        
+    Returns:
+        pd.DataFrame: Um DataFrame com o perfil categórico de cada cluster.
+    """
+    df_temp = df_original.copy()
+    df_temp['cluster'] = labels
+    
+    # Seleciona apenas colunas de texto (categóricas)
+    colunas_categoricas = df_temp.select_dtypes(include=['object', 'category']).columns
+    
+    # Calcula a moda para cada cluster e cada coluna categórica
+    perfil_categorico = df_temp.groupby('cluster')[colunas_categoricas].agg(lambda x: x.mode()[0])
+    
+    # Adiciona a contagem de clientes por cluster
+    perfil_categorico['n_clientes'] = df_temp['cluster'].value_counts()
+    
+    # Renomeia o índice para incluir o nome do modelo
+    perfil_categorico.index = [f"cluster_{nome_modelo}_{i}" for i in perfil_categorico.index]
+    
+    return perfil_categorico

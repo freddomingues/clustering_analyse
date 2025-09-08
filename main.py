@@ -73,24 +73,93 @@ def main():
     
     # Etapa 5: Avaliação
     print("\n--- Avaliando os modelos ---")
-    df_avaliacao = evaluation.avaliar_modelos(df_padronizado, labels_dict)
+
+    # Dicionário para modelos que usaram o DATASET COMPLETO
+    labels_dict_full = {
+        'K-Means': labels_kmeans,
+        'DBSCAN': labels_dbscan
+    }
+    print("\nAvaliando modelos no dataset completo (20.000 amostras):")
+    df_avaliacao_full = evaluation.avaliar_modelos(df_padronizado, labels_dict_full)
+
+    # Dicionário para modelos que usaram a AMOSTRA
+    labels_dict_sample = {
+        'Hierárquico': labels_hierarquico,
+    }
+    print("\nAvaliando modelos na amostra (10.000 amostras):")
+    df_avaliacao_sample = evaluation.avaliar_modelos(df_amostra, labels_dict_sample)
+
+    # Juntando os resultados para uma única tabela de comparação
+    df_avaliacao_final = pd.concat([df_avaliacao_full, df_avaliacao_sample])
+
     print("\nTabela de Avaliação Comparativa dos Modelos:")
-    print(df_avaliacao.to_string())
+    # O .sort_values() é opcional, mas ajuda a manter a tabela organizada
+    print(df_avaliacao_final.sort_values(by='Coeficiente de Silhueta', ascending=False).to_string())
+
+    # Etapa 6: Visualização e Análise de Perfis
+    print("\n--- Gerando visualizações dos clusters via PCA ---")
+
+    # Visualização para modelos do dataset completo
+    for nome_modelo, labels in labels_dict_full.items():
+        if len(set(labels)) > 1:
+            print("Salvando clusters para o modelo (dataset completo): {}".format(nome_modelo))
+            # Passamos o df_padronizado aqui
+            visualization.plotar_cluster_pca_individual(df_padronizado, labels, nome_modelo)
+
+    # Visualização para o modelo da amostra
+    if len(set(labels_hierarquico)) > 1:
+        print("Salvando clusters para o modelo (amostra): Hierárquico")
+        # ATENÇÃO: Passamos o df_amostra aqui
+        visualization.plotar_cluster_pca_individual(df_amostra, labels_hierarquico, "Hierárquico")
     
     # Etapa 6: Visualização e Análise de Perfis
     print("\n--- Gerando visualizações dos clusters via PCA ---")
-    for nome_modelo, labels in labels_dict.items():
+
+    # Visualização para modelos do dataset completo (K-Means, DBSCAN)
+    for nome_modelo, labels in labels_dict_full.items():
         if len(set(labels)) > 1:
-            # >>> CORREÇÃO: Trocando f-string por .format() <<<
-            print("Exibindo clusters para o modelo: {}".format(nome_modelo))
+            print("Salvando clusters para o modelo (dataset completo): {}".format(nome_modelo))
+            # Correto: Usa df_padronizado (20k) com labels de 20k
             visualization.plotar_cluster_pca_individual(df_padronizado, labels, nome_modelo)
-            plt.show()
+
+    # Visualização para o modelo da amostra (Hierárquico)
+    # Checamos se o dicionário existe para evitar erros
+    if 'Hierárquico' in labels_dict_sample:
+        labels_hierarquico = labels_dict_sample['Hierárquico']
+        if len(set(labels_hierarquico)) > 1:
+            print("Salvando clusters para o modelo (amostra): Hierárquico")
+            # A CORREÇÃO PRINCIPAL ESTÁ AQUI:
+            # Usamos df_amostra (10k) com os labels do hierárquico (10k)
+            visualization.plotar_cluster_pca_individual(df_amostra, labels_hierarquico, "Hierárquico")
 
     print("\n--- Análise de Perfil dos Clusters (K-Means) ---")
     perfil_kmeans = evaluation.analisar_perfis_clusters(df_numerico_original, labels_kmeans, 'K-Means')
-    print("\nPerfil Médio dos Clusters Gerados pelo K-Means:")
+    print("\nPerfil Numérico Médio dos Clusters (K-Means):")
     print(perfil_kmeans.to_string())
+
+    # --- NOVO: Análise de Perfil Categórico (K-Means) ---
+    perfil_cat_kmeans = evaluation.analisar_perfis_categoricos(df_clientes, labels_kmeans, 'K-Means')
+    print("\nPerfil Categórico (Moda) dos Clusters (K-Means):")
+    print(perfil_cat_kmeans.to_string())
+    # --- FIM DA ADIÇÃO ---
+
+
+    # --- NOVO: Análise de Perfil para o modelo Hierárquico (amostra) ---
+    print("\n--- Análise de Perfil dos Clusters (Hierárquico na Amostra) ---")
+    
+    # Precisamos pegar as linhas originais correspondentes à amostra
+    df_clientes_amostra = df_clientes.loc[df_amostra.index]
+    df_numerico_original_amostra = df_numerico_original.loc[df_amostra.index]
+    
+    perfil_hierarquico_num = evaluation.analisar_perfis_clusters(df_numerico_original_amostra, labels_hierarquico, 'Hierárquico')
+    print("\nPerfil Numérico Médio dos Clusters (Hierárquico na Amostra):")
+    print(perfil_hierarquico_num.to_string())
+    
+    perfil_hierarquico_cat = evaluation.analisar_perfis_categoricos(df_clientes_amostra, labels_hierarquico, 'Hierárquico')
+    print("\nPerfil Categórico (Moda) dos Clusters (Hierárquico na Amostra):")
+    print(perfil_hierarquico_cat.to_string())
+    # --- FIM DA ADIÇÃO ---
+
 
 if __name__ == '__main__':
     main()
-
