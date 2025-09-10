@@ -75,10 +75,15 @@ def gerar_dados_sinteticos(n_clientes=30000, seed=42):
     
     # --- CRIAÇÃO DO DATAFRAME FINAL ---
     df = pd.DataFrame({
-        'cliente_id': cliente_id, 'idade': idade, 'sexo': sexo,
-        'estado_civil': estado_civil, 'nivel_educacional': nivel_educacional,
-        'numero_dependentes': numero_dependentes, 'tipo_emprego': tipo_emprego,
-        'renda_mensal': renda_mensal, 'score_credito': score_credito,
+        'cliente_id': cliente_id, 
+        'idade': idade, 
+        'sexo': sexo,
+        'estado_civil': estado_civil, 
+        'nivel_educacional': nivel_educacional,
+        'numero_dependentes': numero_dependentes, 
+        'tipo_emprego': tipo_emprego,
+        'renda_mensal': renda_mensal, 
+        'score_credito': score_credito,
         'historico_pagamento_recente': historico_pagamento_recente,
         'produto_origem_divida': produto_origem_divida,
         'tempo_de_debito_meses': tempo_de_debito_meses,

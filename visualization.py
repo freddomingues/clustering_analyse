@@ -121,3 +121,66 @@ def plotar_radar_individual(perfil_clusters, cluster_id, filename=None):
     fig.tight_layout()
     fig.savefig(f"images/{filename}")
     plt.close(fig)
+
+def plotar_distribuicoes_separadas(df_numerico, colunas_demograficas, colunas_financeiras):
+    """
+    Plota distribuições das variáveis numéricas separando demográficas e financeiras.
+    Salva duas imagens: uma para demográficas e outra para financeiras.
+    """
+    def plotar(df_subset, filename):
+        plt.style.use('seaborn-v0_8-whitegrid')
+        num_plots = len(df_subset.columns)
+        num_cols = 2
+        num_rows = (num_plots + num_cols - 1) // num_cols
+        fig, axes = plt.subplots(num_rows, num_cols, figsize=(14, num_rows * 4))
+        axes = axes.flatten()
+    
+        for i, col in enumerate(df_subset.columns):
+            sns.histplot(df_subset[col], kde=True, ax=axes[i], bins=50, color='royalblue')
+            axes[i].set_title(f'Distribuição de: {col}', fontsize=12)
+            axes[i].set_xlabel(col)
+            axes[i].set_ylabel('Frequência')
+    
+        for j in range(i + 1, len(axes)):
+            axes[j].set_visible(False)
+    
+        fig.tight_layout(pad=3.0)
+        fig.savefig(f"images/{filename}")
+        plt.close(fig)
+    
+    # Plotando variáveis demográficas
+    if colunas_demograficas:
+        plotar(df_numerico[colunas_demograficas], "distribuicoes_demograficas.png")
+        print("Distribuições demográficas salvas em images/distribuicoes_demograficas.png")
+    
+    # Plotando variáveis financeiras
+    if colunas_financeiras:
+        plotar(df_numerico[colunas_financeiras], "distribuicoes_financeiras.png")
+        print("Distribuições financeiras salvas em images/distribuicoes_financeiras.png")
+
+def plotar_categoricas(df, colunas_categoricas, filename_prefix="categoricas"):
+    """
+    Plota contagens das variáveis categóricas em gráficos de barra.
+    """
+    plt.style.use('seaborn-v0_8-whitegrid')
+    num_plots = len(colunas_categoricas)
+    num_cols = 2
+    num_rows = (num_plots + num_cols - 1) // num_cols
+    fig, axes = plt.subplots(num_rows, num_cols, figsize=(14, num_rows * 4))
+    axes = axes.flatten()
+
+    for i, col in enumerate(colunas_categoricas):
+        sns.countplot(x=col, data=df, hue=col, ax=axes[i], palette='pastel', legend=False)
+        axes[i].set_title(f'Contagem de: {col}', fontsize=12)
+        axes[i].set_xlabel(col)
+        axes[i].set_ylabel('Frequência')
+        for p in axes[i].patches:
+            axes[i].annotate(f'{p.get_height()}', (p.get_x() + p.get_width() / 2., p.get_height()),
+                             ha='center', va='bottom', fontsize=10)
+
+    for j in range(i + 1, len(axes)):
+        axes[j].set_visible(False)
+
+    fig.tight_layout(pad=3.0)
+    fig.savefig(f"images/{filename_prefix}.png")
+    plt.close(fig)
