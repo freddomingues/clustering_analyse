@@ -53,13 +53,8 @@ def main():
     print("\n--- Iniciando a determinação do K ótimo para K-Means ---")
     resultados_k = clustering_models.encontrar_k_otimo(df_padronizado, max_k=10)
     
-    print("Exibindo gráfico do Método do Cotovelo...")
-    visualization.plotar_metodo_cotovelo(resultados_k)
-    plt.show()
-    
-    print("Exibindo gráfico da Análise de Silhueta...")
-    visualization.plotar_score_silhueta(resultados_k)
-    plt.show()
+    print("Exibindo gráfico do Método do Cotovelo e de Silhueta...")
+    visualization.plotar_cotovelo_e_silhueta_juntos(resultados_k, filename="cotovelo_silhueta.png")
     
     K_OTIMO = 4
     print("\nNúmero de clusters escolhido com base na análise: {}".format(K_OTIMO))
@@ -122,6 +117,12 @@ def main():
     print(perfil_hierarquico_num.to_string())
     perfil_hierarquico_cat = evaluation.analisar_perfis_categoricos(df_clientes_amostra, labels_hierarquico, 'Hierárquico')
     print(perfil_hierarquico_cat.to_string())
+
+    print("\n--- Gerando visualizações de Perfil dos Clusters ---")
+    df_clusters = df_numerico_original.copy()
+    df_clusters["cluster"] = labels_kmeans
+    features = ['idade', 'renda_mensal', 'score_credito', 'tempo_de_debito_meses', 'valor_divida']
+    visualization.plotar_radar_clusters(df_clusters, features, n_clusters=K_OTIMO, output_dir="images")
 
 if __name__ == '__main__':
     main()

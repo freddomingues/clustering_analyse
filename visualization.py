@@ -6,6 +6,7 @@ from sklearn.decomposition import PCA
 import numpy as np
 import os
 import preprocessing  # Importação necessária para a normalização do radar
+from math import pi
 
 # Cria o diretório 'images' se não existir
 os.makedirs("images", exist_ok=True)
@@ -16,7 +17,6 @@ def salvar_tabela_descritiva(df_numerico, filename="tabela_descritiva.csv"):
     """
     tabela = df_numerico.describe().transpose()
     tabela.to_csv(f"images/{filename}")
-    print(f"Tabela descritiva salva em images/{filename}")
 
 def plotar_matriz_correlacao(df_numerico, filename="matriz_correlacao.png"):
     plt.style.use('seaborn-v0_8-whitegrid')
@@ -151,12 +151,10 @@ def plotar_distribuicoes_separadas(df_numerico, colunas_demograficas, colunas_fi
     # Plotando variáveis demográficas
     if colunas_demograficas:
         plotar(df_numerico[colunas_demograficas], "distribuicoes_demograficas.png")
-        print("Distribuições demográficas salvas em images/distribuicoes_demograficas.png")
     
     # Plotando variáveis financeiras
     if colunas_financeiras:
         plotar(df_numerico[colunas_financeiras], "distribuicoes_financeiras.png")
-        print("Distribuições financeiras salvas em images/distribuicoes_financeiras.png")
 
 def plotar_categoricas(df, colunas_categoricas, filename_prefix="categoricas"):
     """
@@ -183,4 +181,88 @@ def plotar_categoricas(df, colunas_categoricas, filename_prefix="categoricas"):
 
     fig.tight_layout(pad=3.0)
     fig.savefig(f"images/{filename_prefix}.png")
+    plt.close(fig)
+
+def plotar_cotovelo_e_silhueta_juntos(resultados_k, filename="cotovelo_silhueta.png"):
+    """
+    Plota lado a lado o gráfico do método do cotovelo e o gráfico do coeficiente de silhueta.
+    """
+    plt.style.use('seaborn-v0_8-whitegrid')
+    fig, axes = plt.subplots(1, 2, figsize=(18, 6))
+
+    # Gráfico do Cotovelo
+    axes[0].plot(resultados_k['range_k'], resultados_k['inercias'], 'bo-', label='WCSS')
+    axes[0].set_xlabel('Número de Clusters (K)')
+    axes[0].set_ylabel('Inércia (WCSS)')
+    axes[0].set_title('Método do Cotovelo', fontsize=14)
+    axes[0].grid(True)
+    axes[0].legend()
+
+    # Gráfico da Silhueta
+    axes[1].plot(resultados_k['range_k'], resultados_k['scores_silhueta'], 'ro-', label='Coeficiente de Silhueta')
+    axes[1].set_xlabel('Número de Clusters (K)')
+    axes[1].set_ylabel('Coeficiente Médio de Silhueta')
+    axes[1].set_title('Análise de Silhueta', fontsize=14)
+    axes[1].grid(True)
+    axes[1].legend()
+
+    fig.tight_layout()
+    fig.savefig(f"images/{filename}")
+    plt.close(fig)
+
+def normalizar_por_variavel(df):
+    """
+    Normaliza cada coluna (variável) de um DataFrame para a escala [0, 1],
+    considerando apenas os valores médios por cluster.
+    """
+    return (df - df.min()) / (df.max() - df.min())
+
+def plotar_radar_clusters(df_clusters, features, n_clusters, output_dir="images", filename="radar_clusters.png"):
+    """
+    Plota os gráficos de radar dos clusters em uma única figura com quadrantes.
+    Normaliza cada variável para [0,1] considerando apenas os valores médios dos clusters.
+    """
+    import numpy as np
+    import matplotlib.cm as cm
+
+    os.makedirs(output_dir, exist_ok=True)
+
+    # Calcula médias por cluster
+    cluster_means = df_clusters.groupby('cluster')[features].mean()
+
+    # Normaliza cada variável (coluna) de forma independente
+    cluster_means_norm = (cluster_means - cluster_means.min()) / (cluster_means.max() - cluster_means.min())
+
+    num_vars = len(features)
+    angles = np.linspace(0, 2 * np.pi, num_vars, endpoint=False).tolist()
+    angles += angles[:1]
+
+    # Cores diferentes para cada cluster
+    colors = cm.get_cmap("tab10", n_clusters)
+
+    # Subplots em 2x2
+    fig, axes = plt.subplots(2, 2, figsize=(12, 10), subplot_kw=dict(polar=True))
+    axes = axes.flatten()
+
+    for cluster_id in range(n_clusters):
+        valores = cluster_means_norm.loc[cluster_id].values.tolist()
+        valores += valores[:1]
+
+        ax = axes[cluster_id]
+        ax.plot(angles, valores, linewidth=2, label=f'Cluster {cluster_id}', color=colors(cluster_id))
+        ax.fill(angles, valores, alpha=0.25, color=colors(cluster_id))
+
+        ax.set_xticks(angles[:-1])
+        ax.set_xticklabels(features, size=9)
+        ax.set_yticks([0.2, 0.4, 0.6, 0.8, 1.0])
+        ax.set_yticklabels([0.2, 0.4, 0.6, 0.8, 1.0], size=8)
+        ax.set_ylim(0, 1)
+        ax.set_title(f'Cluster {cluster_id}', size=12, pad=15)
+
+    for j in range(cluster_id + 1, len(axes)):
+        axes[j].set_visible(False)
+
+    fig.suptitle("Perfis Normalizados dos Clusters (comparação por variável)", size=16, y=1.02)
+    fig.tight_layout()
+    fig.savefig(os.path.join(output_dir, filename))
     plt.close(fig)
