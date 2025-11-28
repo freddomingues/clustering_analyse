@@ -1,4 +1,4 @@
-# Sistema de Análise de Clusterização de Clientes Inadimplentes
+# Segmentação de clientes para otimizar estratégias de negociação de dívidas
 
 ## 📋 Sobre o Projeto
 
@@ -273,7 +273,7 @@ Este projeto é fornecido como está, para fins educacionais e de análise.
 
 ## 👤 Autor
 
-Desenvolvido para análise de segmentação de clientes inadimplentes.
+Frederico Antônio Domingues
 
 ## 🔗 Referências
 
