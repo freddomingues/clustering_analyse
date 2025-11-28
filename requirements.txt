@@ -1,0 +1,19 @@
+# Dependências do Projeto - Sistema de Análise de Clusterização
+
+# Manipulação e Análise de Dados
+pandas>=1.5.0
+numpy>=1.23.0
+
+# Machine Learning e Pré-processamento
+scikit-learn>=1.2.0
+
+# Visualização
+matplotlib>=3.6.0
+seaborn>=0.12.0
+
+# Leitura/Escrita de Arquivos Excel
+openpyxl>=3.0.0
+
+# Dashboard Interativo (opcional)
+streamlit>=1.25.0
+
